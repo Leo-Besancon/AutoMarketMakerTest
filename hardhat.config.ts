@@ -17,11 +17,14 @@ const config: HardhatUserConfig = {
   networks: {
 	hardhat: {
     },
-    ropsten: {
-      url: process.env.ROPSTEN_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+	goerli: {
+      url: `https://goerli.infura.io/v3/`,
+      accounts: process.env.GOERLI_ACCOUNT_2_PRIVATE_KEY !== undefined ? [process.env.GOERLI_ACCOUNT_2_PRIVATE_KEY] : []
     },
+	mainnet: {
+      url: `https://mainnet.infura.io/v3/`,
+      accounts: process.env.MAINNET_ACCOUNT_PRIVATE_KEY !== undefined ? [process.env.MAINNET_ACCOUNT_PRIVATE_KEY] : []
+    }
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,

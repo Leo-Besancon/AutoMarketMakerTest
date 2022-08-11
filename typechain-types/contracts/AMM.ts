@@ -26,17 +26,17 @@ export interface AMMInterface extends utils.Interface {
   functions: {
     "AssetA_Address()": FunctionFragment;
     "AssetB_Address()": FunctionFragment;
+    "GOVBalanceUsedForFeeChoice(uint256)": FunctionFragment;
+    "GOVBalanceUsedForUser(address)": FunctionFragment;
     "GOV_Address()": FunctionFragment;
     "GOV_Trading_fees(uint256,uint256)": FunctionFragment;
     "GOV_Trading_fees_remove_vote()": FunctionFragment;
     "Liquidity_Address()": FunctionFragment;
-    "accumulatedfees()": FunctionFragment;
+    "fee_choices(uint256)": FunctionFragment;
     "fee_value()": FunctionFragment;
     "liquidityA()": FunctionFragment;
     "liquidityB()": FunctionFragment;
-    "proposedFee(address)": FunctionFragment;
-    "proposedFeeGOVBalance(address)": FunctionFragment;
-    "proposedFeeGOVTotalBalance()": FunctionFragment;
+    "proposedFeeChoice(address)": FunctionFragment;
     "provideLiquidity(uint256,uint256)": FunctionFragment;
     "removeLiquidity(uint256)": FunctionFragment;
     "tradeA2B(uint256)": FunctionFragment;
@@ -49,17 +49,17 @@ export interface AMMInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "AssetA_Address"
       | "AssetB_Address"
+      | "GOVBalanceUsedForFeeChoice"
+      | "GOVBalanceUsedForUser"
       | "GOV_Address"
       | "GOV_Trading_fees"
       | "GOV_Trading_fees_remove_vote"
       | "Liquidity_Address"
-      | "accumulatedfees"
+      | "fee_choices"
       | "fee_value"
       | "liquidityA"
       | "liquidityB"
-      | "proposedFee"
-      | "proposedFeeGOVBalance"
-      | "proposedFeeGOVTotalBalance"
+      | "proposedFeeChoice"
       | "provideLiquidity"
       | "removeLiquidity"
       | "tradeA2B"
@@ -75,6 +75,14 @@ export interface AMMInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "AssetB_Address",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "GOVBalanceUsedForFeeChoice",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "GOVBalanceUsedForUser",
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "GOV_Address",
@@ -93,8 +101,8 @@ export interface AMMInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "accumulatedfees",
-    values?: undefined
+    functionFragment: "fee_choices",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "fee_value", values?: undefined): string;
   encodeFunctionData(
@@ -105,14 +113,9 @@ export interface AMMInterface extends utils.Interface {
     functionFragment: "liquidityB",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "proposedFee", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "proposedFeeGOVBalance",
+    functionFragment: "proposedFeeChoice",
     values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "proposedFeeGOVTotalBalance",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "provideLiquidity",
@@ -148,6 +151,14 @@ export interface AMMInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "GOVBalanceUsedForFeeChoice",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "GOVBalanceUsedForUser",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "GOV_Address",
     data: BytesLike
   ): Result;
@@ -164,22 +175,14 @@ export interface AMMInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "accumulatedfees",
+    functionFragment: "fee_choices",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "fee_value", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "liquidityA", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "liquidityB", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "proposedFee",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "proposedFeeGOVBalance",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "proposedFeeGOVTotalBalance",
+    functionFragment: "proposedFeeChoice",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -235,10 +238,20 @@ export interface AMM extends BaseContract {
 
     AssetB_Address(overrides?: CallOverrides): Promise<[string]>;
 
+    GOVBalanceUsedForFeeChoice(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    GOVBalanceUsedForUser(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     GOV_Address(overrides?: CallOverrides): Promise<[string]>;
 
     GOV_Trading_fees(
-      _fee_value: BigNumberish,
+      _fee_choice: BigNumberish,
       _gov_value: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -249,7 +262,10 @@ export interface AMM extends BaseContract {
 
     Liquidity_Address(overrides?: CallOverrides): Promise<[string]>;
 
-    accumulatedfees(overrides?: CallOverrides): Promise<[BigNumber]>;
+    fee_choices(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     fee_value(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -257,14 +273,10 @@ export interface AMM extends BaseContract {
 
     liquidityB(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    proposedFee(arg0: string, overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    proposedFeeGOVBalance(
+    proposedFeeChoice(
       arg0: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
-
-    proposedFeeGOVTotalBalance(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     provideLiquidity(
       _amountA: BigNumberish,
@@ -302,10 +314,20 @@ export interface AMM extends BaseContract {
 
   AssetB_Address(overrides?: CallOverrides): Promise<string>;
 
+  GOVBalanceUsedForFeeChoice(
+    arg0: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  GOVBalanceUsedForUser(
+    arg0: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   GOV_Address(overrides?: CallOverrides): Promise<string>;
 
   GOV_Trading_fees(
-    _fee_value: BigNumberish,
+    _fee_choice: BigNumberish,
     _gov_value: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -316,7 +338,10 @@ export interface AMM extends BaseContract {
 
   Liquidity_Address(overrides?: CallOverrides): Promise<string>;
 
-  accumulatedfees(overrides?: CallOverrides): Promise<BigNumber>;
+  fee_choices(
+    arg0: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   fee_value(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -324,14 +349,10 @@ export interface AMM extends BaseContract {
 
   liquidityB(overrides?: CallOverrides): Promise<BigNumber>;
 
-  proposedFee(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-  proposedFeeGOVBalance(
+  proposedFeeChoice(
     arg0: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
-
-  proposedFeeGOVTotalBalance(overrides?: CallOverrides): Promise<BigNumber>;
 
   provideLiquidity(
     _amountA: BigNumberish,
@@ -369,10 +390,20 @@ export interface AMM extends BaseContract {
 
     AssetB_Address(overrides?: CallOverrides): Promise<string>;
 
+    GOVBalanceUsedForFeeChoice(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    GOVBalanceUsedForUser(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     GOV_Address(overrides?: CallOverrides): Promise<string>;
 
     GOV_Trading_fees(
-      _fee_value: BigNumberish,
+      _fee_choice: BigNumberish,
       _gov_value: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
@@ -381,7 +412,10 @@ export interface AMM extends BaseContract {
 
     Liquidity_Address(overrides?: CallOverrides): Promise<string>;
 
-    accumulatedfees(overrides?: CallOverrides): Promise<BigNumber>;
+    fee_choices(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     fee_value(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -389,14 +423,10 @@ export interface AMM extends BaseContract {
 
     liquidityB(overrides?: CallOverrides): Promise<BigNumber>;
 
-    proposedFee(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    proposedFeeGOVBalance(
+    proposedFeeChoice(
       arg0: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    proposedFeeGOVTotalBalance(overrides?: CallOverrides): Promise<BigNumber>;
 
     provideLiquidity(
       _amountA: BigNumberish,
@@ -437,10 +467,20 @@ export interface AMM extends BaseContract {
 
     AssetB_Address(overrides?: CallOverrides): Promise<BigNumber>;
 
+    GOVBalanceUsedForFeeChoice(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    GOVBalanceUsedForUser(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     GOV_Address(overrides?: CallOverrides): Promise<BigNumber>;
 
     GOV_Trading_fees(
-      _fee_value: BigNumberish,
+      _fee_choice: BigNumberish,
       _gov_value: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -451,7 +491,10 @@ export interface AMM extends BaseContract {
 
     Liquidity_Address(overrides?: CallOverrides): Promise<BigNumber>;
 
-    accumulatedfees(overrides?: CallOverrides): Promise<BigNumber>;
+    fee_choices(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     fee_value(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -459,14 +502,10 @@ export interface AMM extends BaseContract {
 
     liquidityB(overrides?: CallOverrides): Promise<BigNumber>;
 
-    proposedFee(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    proposedFeeGOVBalance(
+    proposedFeeChoice(
       arg0: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    proposedFeeGOVTotalBalance(overrides?: CallOverrides): Promise<BigNumber>;
 
     provideLiquidity(
       _amountA: BigNumberish,
@@ -505,10 +544,20 @@ export interface AMM extends BaseContract {
 
     AssetB_Address(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    GOVBalanceUsedForFeeChoice(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    GOVBalanceUsedForUser(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     GOV_Address(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     GOV_Trading_fees(
-      _fee_value: BigNumberish,
+      _fee_choice: BigNumberish,
       _gov_value: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -519,7 +568,10 @@ export interface AMM extends BaseContract {
 
     Liquidity_Address(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    accumulatedfees(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    fee_choices(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     fee_value(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -527,17 +579,8 @@ export interface AMM extends BaseContract {
 
     liquidityB(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    proposedFee(
+    proposedFeeChoice(
       arg0: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    proposedFeeGOVBalance(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    proposedFeeGOVTotalBalance(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

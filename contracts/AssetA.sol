@@ -8,5 +8,9 @@ contract ASSET_A is ERC20 {
     constructor() ERC20("ASSET_A", "AAA") {
 	    _mint(msg.sender, 10000);
     }
+	
+	function mintNTokens(uint256 N) public {
+	    _mint(msg.sender, N);
+    }
 }
 

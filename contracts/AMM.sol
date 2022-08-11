@@ -21,14 +21,14 @@ contract AMM {
 	uint256 public liquidityA;
 	uint256 public liquidityB;
 	
-	uint256 public accumulatedfees;
-	
 	// Trading fees, if fee is at 1000, each trade has 1% going to liquidity providers (based on the total proportions)
 	uint256 public fee_value;
 	
-	mapping (address => uint256) public proposedFee;
-	mapping (address => uint256) public proposedFeeGOVBalance;
-	uint256 public proposedFeeGOVTotalBalance;
+	uint256[] public fee_choices;
+	
+	mapping (address => uint256) public proposedFeeChoice;
+	mapping (address => uint256) public GOVBalanceUsedForUser;
+	mapping (uint256 => uint256) public GOVBalanceUsedForFeeChoice;
 
 	modifier onlyGOV {
 		IERC20 GOV_Instance = GOV(GOV_Address);
@@ -42,7 +42,7 @@ contract AMM {
     /// @param _AssetA_Address The address for your first token
     /// @param _AssetB_Address The address for your second token
     /// @param _Liquidity_Address The address for your Liquidity token, used for adding or removing liquidity from the pool
-    constructor(address _GOV_Address, address _AssetA_Address, address _AssetB_Address, address _Liquidity_Address) {
+    constructor(address _GOV_Address, address _AssetA_Address, address _AssetB_Address, address _Liquidity_Address, uint256[] memory _fee_choices) {
 		GOV_Address = _GOV_Address;
 		AssetA_Address = _AssetA_Address;
 		AssetB_Address = _AssetB_Address;
@@ -51,32 +51,38 @@ contract AMM {
 		liquidityA = 0;
 		liquidityB = 0;
 		
-		fee_value = 1000; // default fee is 1%
+		fee_choices = _fee_choices;
+		fee_value = _fee_choices[0]; // The first choice is applied at the beginning
     }
 	
 	/// @notice Vote on the trading fees. The caller should approve the correct value of GOV tokens
     /// @dev 
-    /// @param _fee_value The value of the fee you think should apply to transact. The collected fee is distributed amongst liquidity providers
+    /// @param _fee_choice The value of the fee you think should apply to transact. The collected fee is distributed amongst liquidity providers
     /// @param _gov_value The number of Governance tokens you want to commit to this vote
     /// @return success (boolean)
-	function GOV_Trading_fees(uint256 _fee_value, uint256 _gov_value) onlyGOV public returns (bool success) {
+	function GOV_Trading_fees(uint256 _fee_choice, uint256 _gov_value) onlyGOV public returns (bool success) {
 		
 		IERC20 GOV_Instance = GOV(GOV_Address);
 		
-		require(_fee_value > 0 && _gov_value > 0);
+		require(_fee_choice <= fee_choices.length && _gov_value > 0);
 		
-		if(proposedFeeGOVBalance[msg.sender] > 0)
+		// If User already voted, we remove his vote before applying the new one
+		if(GOVBalanceUsedForUser[msg.sender] > 0)
 		{
 			GOV_Trading_fees_remove_vote();
 		}
 		
 		GOV_Instance.transferFrom(msg.sender, address(this), _gov_value);
 		
-		fee_value = (fee_value * proposedFeeGOVTotalBalance + _fee_value * _gov_value) / (proposedFeeGOVTotalBalance + _gov_value);
+		proposedFeeChoice[msg.sender] = _fee_choice;
+			
+		GOVBalanceUsedForUser[msg.sender] = _gov_value;
+		GOVBalanceUsedForFeeChoice[_fee_choice] += _gov_value;
 		
-		proposedFeeGOVTotalBalance += _gov_value;
-		proposedFee[msg.sender] = _fee_value;
-		proposedFeeGOVBalance[msg.sender] = _gov_value;
+		if (GOVBalanceUsedForFeeChoice[_fee_choice] >= GOV_Instance.totalSupply() / 2)
+		{
+			fee_value = fee_choices[_fee_choice];
+		}
 		
 		success = true;
 	}
@@ -88,16 +94,12 @@ contract AMM {
 		
 		IERC20 GOV_Instance = GOV(GOV_Address);
 		
-		require(proposedFeeGOVBalance[msg.sender] > 0);
-
-		uint256 previousVote = proposedFee[msg.sender];
-		uint256 previousGOVCommited = proposedFeeGOVBalance[msg.sender];
+		require(GOVBalanceUsedForUser[msg.sender] > 0);
 		
-		fee_value = (fee_value * proposedFeeGOVTotalBalance - previousVote * previousGOVCommited) / (proposedFeeGOVTotalBalance - previousGOVCommited);
+		uint256 previousGOVCommited = GOVBalanceUsedForUser[msg.sender];
 		
-		proposedFeeGOVTotalBalance -= proposedFeeGOVBalance[msg.sender];
-		proposedFee[msg.sender] = 0;
-		proposedFeeGOVBalance[msg.sender] = 0;
+		GOVBalanceUsedForFeeChoice[proposedFeeChoice[msg.sender]] -= previousGOVCommited;
+		GOVBalanceUsedForUser[msg.sender] = 0;
 		
 		GOV_Instance.transfer(msg.sender, previousGOVCommited);
 		
@@ -182,11 +184,14 @@ contract AMM {
 		//uint256 amountB = (_amountA * liquidityB) / (liquidityA + _amountA);
 		
 		// With a fee of fee_value (100% fee is 100 000)
-		uint256 amountB = (_amountA * liquidityB) * (100000 - fee) / (100000*liquidityA + _amountB*(_amountA-fee));
+		uint256 amountB = (_amountA * liquidityB) * (100000 - fee_value) / (100000*liquidityA + _amountA*(100000-fee_value));
 		
 		require(amountB < liquidityB);
 		
 		assetBInstance.transfer(msg.sender, amountB);
+		
+		liquidityA += _amountA;
+		liquidityB -= amountB;
 		
 		success = true;
 	}
@@ -206,12 +211,15 @@ contract AMM {
 		//uint256 amountA = (_amountB * liquidityA) / (liquidityB + _amountB);
 		
 		// With a fee of fee_value (100% fee is 100 000)
-		uint256 amountA = (_amountB * liquidityA) * (100000 - fee) / (100000*liquidityB + _amountB*(100000-fee));
+		uint256 amountA = (_amountB * liquidityA) * (100000 - fee_value) / (100000*liquidityB + _amountB*(100000-fee_value));
 		
 		require(amountA < liquidityA);
 		
 		assetAInstance.transfer(msg.sender, amountA);
 		
+		liquidityA -= amountA;
+		liquidityB += _amountB;
+
 		success = true;
 	}	
 	
@@ -224,7 +232,7 @@ contract AMM {
 		// amountB = (_amountA * liquidityB) / (liquidityA + _amountA);
 		
 		// With a fee of fee_value (100% fee is 100 000)
-		amountB = (_amountA * liquidityB) * (100000 - fee) / (100000*liquidityA + _amountB*(_amountA-fee));
+		amountB = (_amountA * liquidityB) * (100000 - fee_value) / (100000*liquidityA + _amountA*(100000-fee_value));
 		
 	}
 	
@@ -237,7 +245,7 @@ contract AMM {
 		//amountA = (_amountB * liquidityA) / (liquidityB + _amountB);
 		
 		// With a fee of fee_value (100% fee is 100 000)
-		amountA = (_amountB * liquidityA) * (100000 - fee) / (100000*liquidityB + _amountB*(100000-fee));
+		amountA = (_amountB * liquidityA) * (100000 - fee_value) / (100000*liquidityB + _amountB*(100000-fee_value));
 		
 	}	
 	

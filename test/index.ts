@@ -42,7 +42,7 @@ describe("GOV", function () {
 	//console.log("Liquidity deployed to:", liquidity.address);
 	
 	AMM = await ethers.getContractFactory("AMM");
-	amm = await AMM.deploy(gov.address, asset_a.address, asset_b.address, liquidity.address);
+	amm = await AMM.deploy(gov.address, asset_a.address, asset_b.address, liquidity.address, [1000, 0, 500, 2500]);
 	await amm.deployed();
 	//console.log("AMM deployed to:", amm.address);
 	
@@ -97,7 +97,7 @@ describe("ASSET_A", function () {
 	//console.log("Liquidity deployed to:", liquidity.address);
 	
 	AMM = await ethers.getContractFactory("AMM");
-	amm = await AMM.deploy(gov.address, asset_a.address, asset_b.address, liquidity.address);
+	amm = await AMM.deploy(gov.address, asset_a.address, asset_b.address, liquidity.address, [1000, 0, 500, 2500]);
 	await amm.deployed();
 	//console.log("AMM deployed to:", amm.address);
 	
@@ -151,7 +151,7 @@ describe("ASSET_B", function () {
 	//console.log("Liquidity deployed to:", liquidity.address);
 	
 	AMM = await ethers.getContractFactory("AMM");
-	amm = await AMM.deploy(gov.address, asset_a.address, asset_b.address, liquidity.address);
+	amm = await AMM.deploy(gov.address, asset_a.address, asset_b.address, liquidity.address, [1000, 0, 500, 2500]);
 	await amm.deployed();
 	//console.log("AMM deployed to:", amm.address);
 	
@@ -204,7 +204,7 @@ describe("LIQUIDITY", function () {
 	//console.log("Liquidity deployed to:", liquidity.address);
 	
 	AMM = await ethers.getContractFactory("AMM");
-	amm = await AMM.deploy(gov.address, asset_a.address, asset_b.address, liquidity.address);
+	amm = await AMM.deploy(gov.address, asset_a.address, asset_b.address, liquidity.address, [1000, 0, 500, 2500]);
 	await amm.deployed();
 	//console.log("AMM deployed to:", amm.address);
 	
@@ -270,7 +270,7 @@ describe("AMM", function () {
 	//console.log("Liquidity deployed to:", liquidity.address);
 	
 	AMM = await ethers.getContractFactory("AMM");
-	amm = await AMM.deploy(gov.address, asset_a.address, asset_b.address, liquidity.address);
+	amm = await AMM.deploy(gov.address, asset_a.address, asset_b.address, liquidity.address, [1000, 0, 500, 2500]);
 	await amm.deployed();
 	//console.log("AMM deployed to:", amm.address);
 	
