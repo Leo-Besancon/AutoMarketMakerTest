@@ -43,9 +43,9 @@ npx hardhat run scripts/deploy.ts --network goerli
 
 On Goerli testnet:
 
-* GOV deployed to: 0x2bb1a06BdF76b608568555Da62d804C93AcCB087
-* AssetA deployed to: 0x5609144216aB3850e676A54536fFeFa1a8A9003b
-* AssetB deployed to: 0x8592367eD2C96773bF17F82d1447f560Ab285A72
-* Liquidity deployed to: 0xe10C71085A233427de2fF973825F91bc538957d5
-* AMM deployed to: 0xd40cA4D54c7998E428Bb62F886D85A8Ab9953054
+* GOV deployed to: 0xFF869D993a4ee1dCCD632FCbe6eF18D2e2C1c3e6
+* AssetA deployed to: 0x6aA625A3Ae056494A8CE7Ee6481071717a9Fb9ab
+* AssetB deployed to: 0x2a639F1e6A0919A44d0974cdE98F379A795ABA87
+* Liquidity deployed to: 0x8103382942Fbe00f6Cc63028bD74Bc928CE50bF6
+* AMM deployed to: 0x0e3c0459e80Baa6771150B69Db5444cBCE743DED
 
